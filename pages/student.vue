@@ -5,7 +5,7 @@
         <v-row justify="space-around">
           <v-col cols="9">
             <h1 class="text-h3 font-italic text-left mb-4">Students</h1>
-            <v-form ref="form" class="mt-13" @submit.prevent="addStudent">
+            <v-form ref="form" class="mt-13">
               <v-row justify="center">
                 <v-col cols="12" sm="6">
                   <v-text-field
@@ -19,7 +19,6 @@
                 </v-col>
                 <v-col cols="12" sm="6">
                   <v-text-field
-                    v-model="newStudent.roll"
                     :rules="[rules.required, rules.roll]"
                     dense
                     outlined
@@ -29,7 +28,6 @@
                 </v-col>
                 <v-col cols="12" sm="6">
                   <v-text-field
-                    v-model="newStudent.class"
                     :rules="[rules.required, rules.class]"
                     dense
                     outlined
@@ -39,7 +37,6 @@
                 </v-col>
                 <v-col cols="12" sm="6">
                   <v-text-field
-                    v-model="newStudent.section"
                     :rules="[rules.required, rules.section]"
                     dense
                     outlined
@@ -66,31 +63,26 @@
         </v-row>
 
         <v-list three-line>
-          <v-list-item>
+          <v-list-item v-for="(student, id) in studentList" :key="id">
             <v-list-item-content>
-              <v-list-item-title> STUDENT-A </v-list-item-title>
-              <v-list-item-subtitle> DETAILS </v-list-item-subtitle>
+              <v-list-item-title> {{ student.name }} </v-list-item-title>
+              <v-list-item-subtitle> {{ student.roll }} </v-list-item-subtitle>
+              <v-list-item-subtitle> {{ student.class }}</v-list-item-subtitle>
+              <v-list-item-subtitle>
+                {{ student.section }}</v-list-item-subtitle
+              >
             </v-list-item-content>
           </v-list-item>
         </v-list>
 
         <v-snackbar
-          v-model="addedSuccessfuly"
+          v-model="snackbar.alert"
           top
           transition="slide-y-transition"
-          timeout="1000"
-          color="green"
+          timeout="2000"
+          :color="snackbar.color"
         >
-          Success!
-        </v-snackbar>
-        <v-snackbar
-          v-model="recheckInput"
-          top
-          transition="slide-y-transition"
-          timeout="1000"
-          color="red"
-        >
-          Please recheck input.
+          {{ snackbar.message }}
         </v-snackbar>
       </v-container>
     </v-main>
@@ -102,12 +94,6 @@
 export default {
   data() {
     return {
-      newStudent: {
-        name: '',
-        roll: '',
-        section: '',
-        class: '',
-      },
       rules: {
         required: (value) => !!value || 'Required',
         name: (value) => {
@@ -138,18 +124,49 @@ export default {
           else return true
         },
       },
-      addedSuccessfuly: false,
-      recheckInput: false,
+      snackbar: {
+        color: 'green',
+        message: '',
+        alert: false,
+      },
     }
   },
+  computed: {
+    studentList() {
+      return this.$store.state.students
+    },
+    newStudent: {
+      get() {
+        return this.$store.state.currStudent
+      },
+      set(value) {
+        this.$store.state.commit('currStudentUpd', value)
+      },
+    },
+  },
   methods: {
-    addStudent() {
-      if (this.$refs.form.validate()) {
-        this.addedSuccessfuly = true
-      } else {
-        this.recheckInput = true
+    myAlert(c, m) {
+      console.log(m)
+      this.snackbar = {
+        color: c === 1 ? 'green' : 'red',
+        message: m,
+        alert: true,
       }
     },
+    // addStudent() {
+    //  console.log(this.newStudent)
+    //  try {
+    //    if (this.$refs.form.validate()) {
+    //      this.$store.commit('addStudent', this.newStudent)
+    //      this.$refs.form.reset()
+    //      this.myAlert(1, 'Success!')
+    //    } else {
+    //      this.myAlert(0, 'Recheck input!')
+    //    }
+    //  } catch (err) {
+    //    this.myAlert(0, err)
+    //  }
+    // },
   },
 }
 </script>
